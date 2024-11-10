@@ -1,9 +1,7 @@
 from .constants import (
     DoOption,
-    COLOR_LIST,
     DO_OPTION_DICT,
     DO_OPTION_NAME,
-    COLOR,
     EXIT_CODES,
     TASKS_JSON_PATH,
 )
@@ -12,9 +10,9 @@ from termcolor import colored, cprint
 import os
 import aiofiles
 import asyncio
-from typing import Callable, Awaitable
 import json
 from typing import List
+from warnings import deprecated
 
 
 # Get a DoOption from its option number
@@ -42,14 +40,22 @@ async def get_do_options() -> tuple[DoOption, ...]:
 async def display_options(
     option_list: list[DoOption], color_cyler: ColorCycler
 ) -> None:
-    # print("eyyy")
     cprint("\n\t==== Options ====", color=await color_cyler.get_next_color())
-    # print("==== Options ==== ")
     for option in option_list:
         cprint(
             f"\t  {option.value}: {DO_OPTION_NAME[option]}",
             color=await color_cyler.get_next_color(),
         )
+
+    cprint(
+        f'\t  "clean" : clears the screen',
+        color=await color_cyler.get_next_color(),
+    )
+
+    cprint(
+        f'\t  "quit"  : to quit out ( all tasks saved )',
+        color=await color_cyler.get_next_color(),
+    )
 
 
 # Placeholder function for tasks
@@ -58,9 +64,9 @@ async def get_task_list() -> list[TaskItem] | None:
     pass
 
 
-async def prompt(color_cycler: ColorCycler) -> str:
+async def prompt(color_cycler: ColorCycler, prompt_message: str = "\r\t> ") -> str:
     prompt_text: str = colored(
-        "\r\t> ", color=await color_cycler.get_next_color(), attrs=["bold"]
+        prompt_message, color=await color_cycler.get_next_color(), attrs=["bold"]
     )
     print("")
     while True:
@@ -98,8 +104,8 @@ async def prompt_task() -> TaskItem:
         prompt1: str = colored("\tTask name   > ", "light_blue")
         prompt2: str = colored("\tDescription > ", "light_green")
 
-        task_name: str = input(prompt1)
-        description: str = input(prompt2)
+        task_name: str = await asyncio.to_thread(input, prompt1)
+        description: str = await asyncio.to_thread(input, prompt2)
         task_id: int = 0
         for task in await get_all_tasks():
             if task_id == task.id:
@@ -112,27 +118,29 @@ async def prompt_task() -> TaskItem:
         raise
 
 
+@deprecated("use builtin methods to remove a task from list of tasks then save it")
 async def remove_task(remove_task: TaskItem, tasks: List[TaskItem]) -> List[TaskItem]:
     return [task for task in tasks if task != remove_task]
 
 
-async def select_task(tasks: List[TaskItem]) -> TaskItem | None:
+async def select_task_id() -> int | None:
     try:
-        prompt_text: str = colored("\n\tSelect Task > ", "light_blue", attrs=["bold"])
-        task_id: int = int(input(prompt_text))
-        task: TaskItem | None = await get_task(task_id, tasks)
-        # cprint(f"from get task = {task}", "red")
-        return task
+        prompt_text: str = colored("\tDelete Task ID > ", "light_red", attrs=["bold"])
+        user_input: str = await asyncio.to_thread(input, prompt_text)
+        task_id: int = int(user_input)
+        return task_id
     except ValueError:
         return None
     except KeyboardInterrupt:
-        return None
+        raise
 
 
 async def get_all_tasks() -> List[TaskItem]:
     tasks: List[TaskItem] = []
     async with aiofiles.open(TASKS_JSON_PATH, "r+") as file:
         json_str: str = await file.read()
+        if not json_str:
+            json_str = "[]"
         tasks_dict = json.loads(json_str)
         for task in tasks_dict:
             tasks.append(
@@ -144,8 +152,9 @@ async def get_all_tasks() -> List[TaskItem]:
 
 
 async def show_tasks(tasks: List[TaskItem]) -> None:
+    cprint("\n\t==== [TODO] ====\n", "light_magenta")
     for task in tasks:
-        cprint(f"\n\t[ID]          :\t{task.id}", "light_cyan")
+        cprint(f"\t[ID]          :\t{task.id}", "light_cyan")
         cprint(f"\t[NAME]        :\t{task.name}", "light_blue")
         cprint(f"\t[DESCRIPTION] :\t{task.description}\n", "light_green")
 
@@ -163,10 +172,6 @@ async def save_tasks(tasks: List[TaskItem]) -> None:
         await file.write(json_str)
 
 
-# async def add_task(task: TaskItem) -> None:
-#     async with aiofiles.open("data/tasks.json")
-
-
 __all__ = [
     "get_do_options",
     "display_options",
@@ -178,7 +183,7 @@ __all__ = [
     "clear_screen",
     "should_exit",
     "show_tasks",
-    "select_task",
+    "select_task_id",
     "get_task",
     "save_tasks",
     "prompt_task",

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pygottado"
-version = "0.1.0"
+version = "0.3.0"
 description = "A simple command line todo app written in python"
 authors = ["kayraze <jadenspitzky@gmail.com>"]
 license = "MIT"
@@ -16,6 +16,8 @@ pytest = "^8.3.3"
 types-aiofiles = "^24.1.0.20240626"
 pytest-asyncio = "^0.24.0"
 pytest-mock = "^3.14.0"
+deprecated = "^1.2.14"
+types-deprecated = "^1.2.9.20240311"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"

@@ -6,7 +6,9 @@ from .test_cases import (
     test_case_get_do_option,
     test_case_get_do_option_name,
     test_case_prompt,
-    test_validate_prompt,
+    test_case_should_exit,
+    test_case_validate_prompt,
+    test_case_should_exit,
 )
 from pygottado.utils.functions import (
     prompt,
@@ -14,6 +16,7 @@ from pygottado.utils.functions import (
     get_do_option_name,
     get_do_options,
     validate_prompt,
+    should_exit,
 )
 from pygottado.utils import DoOption, DO_OPTION_DICT, COLOR
 from pygottado.utils.classes import ColorCycler
@@ -64,12 +67,10 @@ class TestFunctions:
         )
 
         # Run the async prompt function
+        text: str = colored("\r\t> ", color=mocked_color)
         result = await prompt(
-            mock_color_cycler
+            mock_color_cycler, text
         )  # Use await instead of asyncio.run() since pytest-asyncio handles async
-
-        # Generate the colored prompt text
-        text = colored("\n\t> ", color=mocked_color)
 
         # Assert that the mocks were called
         mock_color_cycler.get_next_color.assert_called_once()
@@ -79,7 +80,12 @@ class TestFunctions:
         assert result == expected
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("prompt_str, expected", test_validate_prompt)
+    @pytest.mark.parametrize("prompt_str, expected", test_case_validate_prompt)
     async def test_validate_prompt(self, prompt_str: str, expected: bool) -> None:
         result: bool = await validate_prompt(prompt_str=prompt_str)
         assert result == expected
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("code, expected", test_case_should_exit)
+    async def test_should_exit(self, code: str, expected: bool) -> None:
+        assert await should_exit(code) == expected

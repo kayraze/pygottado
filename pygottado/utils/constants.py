@@ -7,7 +7,6 @@ class DoOption(Enum):
     ADD: int = 1
     DELETE: int = 2
     SHOW: int = 3
-    # SAVE: int = 4
 
 
 EXIT_CODES: Set[str] = {"quit", "exit"}
@@ -24,7 +23,6 @@ DO_OPTION_NAME: Dict[DoOption, str] = {
     DoOption.ADD: "add",
     DoOption.DELETE: "delete",
     DoOption.SHOW: "show",
-    # DoOption.SAVE: "save",
 }
 
 
@@ -46,6 +44,12 @@ COLOR_LIST: Tuple[COLOR, ...] = (
     "light_cyan",
 )
 
+CLEAR_SCREEN_COMMANDS = (
+    "clear",
+    "cls",
+    "clean",
+)
+
 TASKS_JSON_PATH: str = "./pygottado/data/tasks.json"
 
 # Expose only necessary elements
@@ -56,4 +60,5 @@ __all__ = [
     "DO_OPTION_DICT",
     "COLOR",
     "EXIT_CODES",
+    "CLEAR_SCREEN_COMMANDS",
 ]
