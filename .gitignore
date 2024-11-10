@@ -1,5 +1,5 @@
 # Python bytecode files
-__pycache__/
+*__pycache__*
 *.pyc
 *.pyo
 *.pyd
@@ -13,7 +13,7 @@ env.bak/
 venv.bak/
 
 # Distribution / packaging
-.Python
+.Python 
 build/
 dist/
 *.egg-info/
