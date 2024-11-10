@@ -13,6 +13,7 @@ import asyncio
 import json
 from typing import List
 from warnings import deprecated
+import pathlib
 
 
 # Get a DoOption from its option number
@@ -137,18 +138,25 @@ async def select_task_id() -> int | None:
 
 async def get_all_tasks() -> List[TaskItem]:
     tasks: List[TaskItem] = []
-    async with aiofiles.open(TASKS_JSON_PATH, "r+") as file:
-        json_str: str = await file.read()
-        if not json_str:
-            json_str = "[]"
-        tasks_dict = json.loads(json_str)
-        for task in tasks_dict:
-            tasks.append(
-                TaskItem(
-                    id=task["id"], name=task["name"], description=task["description"]
+    try:
+        await create_tasks_data_file()
+
+        async with aiofiles.open(TASKS_JSON_PATH, "r+") as file:
+            json_str: str = await file.read()
+            if not json_str:
+                json_str = "[]"
+            tasks_dict = json.loads(json_str)
+            for task in tasks_dict:
+                tasks.append(
+                    TaskItem(
+                        id=task["id"],
+                        name=task["name"],
+                        description=task["description"],
+                    )
                 )
-            )
-        return tasks
+            return tasks
+    except FileNotFoundError:
+        return []
 
 
 async def show_tasks(tasks: List[TaskItem]) -> None:
@@ -167,9 +175,25 @@ async def get_task(task_id: int, tasks: List[TaskItem]) -> TaskItem | None:
 
 
 async def save_tasks(tasks: List[TaskItem]) -> None:
+
+    await create_tasks_data_file()
+
     async with aiofiles.open(TASKS_JSON_PATH, "w+") as file:
         json_str = json.dumps([task.__dict__ for task in tasks])
         await file.write(json_str)
+
+
+async def create_tasks_data_file() -> bool:
+    # Ensure the directory exists
+    directory: pathlib.Path = pathlib.Path(TASKS_JSON_PATH).parent
+    directory.mkdir(parents=True, exist_ok=True)
+
+    # Now open the file
+    try:
+        async with aiofiles.open(TASKS_JSON_PATH, "a+") as _:
+            return True
+    except PermissionError:
+        return False
 
 
 __all__ = [

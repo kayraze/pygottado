@@ -41,7 +41,7 @@ async def handle_operation(operation: DoOption) -> None:
 
         await show_tasks(tasks)
         selected_task_id: int | None = await select_task_id()
-        if not selected_task_id:
+        if selected_task_id is None:
             cprint(
                 f"\tInvalid Task ID ( select a given ID from above )",
                 "light_red",

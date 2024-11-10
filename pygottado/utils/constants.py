@@ -1,5 +1,8 @@
 from enum import Enum
 from typing import Dict, Tuple, Literal, Set
+from pathlib import Path
+import os
+import platform
 
 
 # Define the DoOption Enum
@@ -50,7 +53,12 @@ CLEAR_SCREEN_COMMANDS = (
     "clean",
 )
 
-TASKS_JSON_PATH: str = "./pygottado/data/tasks.json"
+BASE_DIR: Path = (
+    Path(os.environ["APPDATA"])
+    if platform.system().lower() == "windows"
+    else Path.home() / ".local" / "share"
+)
+TASKS_JSON_PATH: Path = BASE_DIR / "pygottado/data.json"
 
 # Expose only necessary elements
 __all__ = [
