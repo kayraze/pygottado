@@ -2,6 +2,7 @@ import pytest
 from pytest_mock import MockerFixture
 import asyncio
 from typing import Tuple
+import pytest_asyncio
 from .test_cases import (
     test_case_get_do_option,
     test_case_get_do_option_name,
@@ -9,6 +10,7 @@ from .test_cases import (
     test_case_should_exit,
     test_case_validate_prompt,
     test_case_should_exit,
+    test_case_get_task,
 )
 from pygottado.utils.functions import (
     prompt,
@@ -17,9 +19,10 @@ from pygottado.utils.functions import (
     get_do_options,
     validate_prompt,
     should_exit,
+    get_task,
 )
 from pygottado.utils import DoOption, DO_OPTION_DICT, COLOR
-from pygottado.utils.classes import ColorCycler
+from pygottado.utils.classes import ColorCycler, TaskItem
 from unittest import mock
 from termcolor import colored
 
@@ -89,3 +92,13 @@ class TestFunctions:
     @pytest.mark.parametrize("code, expected", test_case_should_exit)
     async def test_should_exit(self, code: str, expected: bool) -> None:
         assert await should_exit(code) == expected
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("task_id, tasks, expected", test_case_get_task)
+    async def test_get_task(
+        self, task_id: int, tasks: list[TaskItem] | None, expected: TaskItem | None
+    ) -> None:
+        returned = await get_task(task_id=task_id, tasks=tasks)
+        result = returned.id if isinstance(returned, TaskItem) else None
+        actual_expected = expected.id if isinstance(expected, TaskItem) else None
+        assert result == actual_expected

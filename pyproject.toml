@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pygottado"
-version = "0.3.0"
+version = "0.3.2"
 description = "A simple command line todo app written in python"
 authors = ["kayraze <jadenspitzky@gmail.com>"]
 license = "MIT"
